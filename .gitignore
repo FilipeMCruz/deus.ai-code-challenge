@@ -28,5 +28,6 @@ go.work.sum
 .env
 
 # Editor/IDE
-# .idea/
+.idea/
 # .vscode/
+Go_Coding_Challenge_v1.pdf
