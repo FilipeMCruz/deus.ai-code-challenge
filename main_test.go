@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func TestRun(t *testing.T) {
+func TestStart(t *testing.T) {
 	type req struct {
 		method       string
 		url          string
