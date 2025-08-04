@@ -1,3 +1,4 @@
+// Package api is responsible for defining the http endpoint handlers provided by the service.
 package api
 
 import (

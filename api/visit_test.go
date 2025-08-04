@@ -14,7 +14,7 @@ import (
 type mockVisitRepository struct {
 	t                   *testing.T
 	storeFunc           func(domain.Visit) error
-	countUniqueVisitors func(pageURL string) (int, error)
+	countUniqueVisitors func(pageURL string) (uint64, error)
 }
 
 func (m *mockVisitRepository) Store(visit domain.Visit) error {
@@ -26,7 +26,7 @@ func (m *mockVisitRepository) Store(visit domain.Visit) error {
 	return nil
 }
 
-func (m *mockVisitRepository) CountUniqueVisitors(pageURL string) (int, error) {
+func (m *mockVisitRepository) CountUniqueVisitors(pageURL string) (uint64, error) {
 	if m.countUniqueVisitors != nil {
 		return m.countUniqueVisitors(pageURL)
 	}
@@ -135,7 +135,7 @@ func TestBuildUniqueVisitorForPageHandler(t *testing.T) {
 	type testCase struct {
 		description        string
 		input              string
-		mockRepoFunc       func(pageURL string) (int, error)
+		mockRepoFunc       func(pageURL string) (uint64, error)
 		expectedResponse   []byte
 		expectedStatusCode int
 	}
@@ -144,7 +144,7 @@ func TestBuildUniqueVisitorForPageHandler(t *testing.T) {
 		{
 			description: "success",
 			input:       `?pageUrl=url`,
-			mockRepoFunc: func(pageURL string) (int, error) {
+			mockRepoFunc: func(pageURL string) (uint64, error) {
 				if pageURL != "url" {
 					t.Errorf("pageURL = %v, want %v", pageURL, "url")
 				}
@@ -169,7 +169,7 @@ func TestBuildUniqueVisitorForPageHandler(t *testing.T) {
 		{
 			description: "error: call to repository fails",
 			input:       `?pageUrl=url`,
-			mockRepoFunc: func(pageURL string) (int, error) {
+			mockRepoFunc: func(pageURL string) (uint64, error) {
 				if pageURL != "url" {
 					t.Errorf("pageURL = %v, want %v", pageURL, "url")
 				}

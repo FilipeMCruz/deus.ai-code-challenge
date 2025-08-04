@@ -49,9 +49,36 @@ docker compose up -d
 - all non-empty visitor ids received are valid and exist within the deus.ai domain;
 - a page url can be seen as a unique identifier, e.g.: https://example.org/page?query=x != http://example.org/page
 
-## Possible improvements
+### Readability/Maintainability
+
+For me "Readability" is deeply tied to the standards followed by the company and knowledge shared within the team.
+Therefore, I always feel like I'm a bit in the dark when tackling this aspect.
+
+Maintainability is also very dependent on the roadmap for the service and it's hard to know how to improve,
+nonetheless, imagining the following sprints would introduce much richer business rules/logic:
+
+- introducing a "service/use case" layer to decouple input and output validation (api) from the actual business rules
+  could bring improvements, it would follow the clean architecture, known by most developers;
+- currently the business contains a single "bounded context". In the future if the domain becomes richer, splitting the
+  server by "bounded contexts" while keeping the api, domain and repository layers will lead to a Modular Monolith
+  architecture that is much easier to split by teams and break into smaller services;
+
+### Performance
+
+Without proper test data it's near impossible to know how performance can be improved, but:
+
+- if the number of unique pages is really big, one can shard the in memory map into multiple smaller ones, allowing
+  locks to be more granular and improving concurrency;
+- having a lockup map with the current count of unique visitors (as an atomic) per page would allow for fast reads
+  without affecting writes or providing bad data;
+- memory and IO resource usage may become a problem, if so, horizontal scaling is prefer in the cloud era we're living
+  in, this would require the following changes to architecture:
+    - load balancer in front of the multiple instances of our service;
+    - shared redis instance where the required data is stored and accessed by our services (this would also ensure no
+      data is lost if a service is shutdown);
 
 ## Notes
 
-- the business rules of this code challenge are almost none existing, in a proper application I'd love for most business logic to
-  live in the domain and have a proper 'services' layer, but with the given requirements there's no need to over-engineer the solution
+- the business rules of this code challenge are almost none existing, in a proper application I'd love for most business
+  logic to live in the domain and have a proper 'services' layer, but with the given requirements there's no need to
+  over-engineer the solution.

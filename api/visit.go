@@ -58,7 +58,7 @@ func BuildUniqueVisitorForPageHandler(repository domain.VisitsRepository) http.H
 	queryParamKey := "pageUrl"
 
 	type responseBody struct {
-		UniqueVisitors int `json:"unique_visitors"`
+		UniqueVisitors uint64 `json:"unique_visitors"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
