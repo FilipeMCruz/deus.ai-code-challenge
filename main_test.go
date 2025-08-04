@@ -5,6 +5,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
@@ -32,8 +33,10 @@ func TestStart(t *testing.T) {
 			description: "unique-visitors -> user-navigation -> unique-visitors -> user-navigation -> unique-visitors -> user-navigation -> unique-visitors",
 			reqs: []req{
 				{
-					method:       http.MethodGet,
-					url:          "/api/v1/unique-visitors?pageUrl=url",
+					method: http.MethodGet,
+					url: ParseQuery("/api/v1/unique-visitors", map[string]string{
+						"pageUrl": "url",
+					}),
 					expectedCode: http.StatusOK,
 					expectedBody: `{"unique_visitors":0}`,
 				},
@@ -44,8 +47,10 @@ func TestStart(t *testing.T) {
 					expectedCode: http.StatusOK,
 				},
 				{
-					method:       http.MethodGet,
-					url:          "/api/v1/unique-visitors?pageUrl=url",
+					method: http.MethodGet,
+					url: ParseQuery("/api/v1/unique-visitors", map[string]string{
+						"pageUrl": "url",
+					}),
 					expectedCode: http.StatusOK,
 					expectedBody: `{"unique_visitors":1}`,
 				},
@@ -68,8 +73,10 @@ func TestStart(t *testing.T) {
 					expectedCode: http.StatusOK,
 				},
 				{
-					method:       http.MethodGet,
-					url:          "/api/v1/unique-visitors?pageUrl=url",
+					method: http.MethodGet,
+					url: ParseQuery("/api/v1/unique-visitors", map[string]string{
+						"pageUrl": "url",
+					}),
 					expectedCode: http.StatusOK,
 					expectedBody: `{"unique_visitors":3}`,
 				},
@@ -131,4 +138,14 @@ func GetFreePort() (int, error) {
 	}
 
 	return -1, err
+}
+
+func ParseQuery(u string, params map[string]string) string {
+	p := url.Values{}
+
+	for k, v := range params {
+		p.Add(k, v)
+	}
+
+	return u + "?" + p.Encode()
 }
