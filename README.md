@@ -8,7 +8,13 @@ This solution is a simple http server written in go.
 Since the domain and requirements are simple there's no need to over-complexify the solution, therefore I choose to:
 
 - not use any libraries, go already provides the basics needed to do what this challenge requires;
-- not follow a commonly used architecture such as onion, layered or clean architecture for the sake of simplicity.
+- not follow a commonly used architecture such as onion, layered or clean architecture for the sake of simplicity:
+    - e.g. there's no need to have a "service/use case" layer when there's almost no business logic, rules or processes
+      to run.
+
+API details can be found [here](docs/API.md).
+
+Architecture details can be found [here](docs/ARCHITCTURE.md).
 
 ## Build & Running
 
@@ -32,7 +38,7 @@ go build -o server .
 To run the solution in port 8080:
 
 ```shell
-./server
+./server -port 8080
 ```
 
 ### Docker
@@ -45,9 +51,10 @@ docker compose up -d
 
 ## Requirements assumed
 
-- page urls and visitor id can't be an empty string
+- page urls and visitor id can't be represented as an empty string;
 - all non-empty visitor ids received are valid and exist within the deus.ai domain;
-- a page url can be seen as a unique identifier, e.g.: https://example.org/page?query=x != http://example.org/page
+- a page url can be seen as a unique identifier, e.g.: https://example.org/page?query=x != http://example.org/page;
+- page url and visitor ids are case sensitive, e.g.: visitor alex != AleX
 
 ### Readability/Maintainability
 
@@ -69,8 +76,6 @@ Without proper test data it's near impossible to know how performance can be imp
 
 - if the number of unique pages is really big, one can shard the in memory map into multiple smaller ones, allowing
   locks to be more granular and improving concurrency;
-- having a lockup map with the current count of unique visitors (as an atomic) per page would allow for fast reads
-  without affecting writes or providing bad data;
 - memory and IO resource usage may become a problem, if so, horizontal scaling is prefer in the cloud era we're living
   in, this would require the following changes to architecture:
     - load balancer in front of the multiple instances of our service;
@@ -81,4 +86,18 @@ Without proper test data it's near impossible to know how performance can be imp
 
 - the business rules of this code challenge are almost none existing, in a proper application I'd love for most business
   logic to live in the domain and have a proper 'services' layer, but with the given requirements there's no need to
-  over-engineer the solution.
+  over-engineer the solution;
+- the repository package is an agnostic package responsible for handling common needs such as logging and gracefully
+  shutting down the server.
+
+This service is far from "production" ready, there's a lot of interesting topics to discuss here:
+- what are the authentication/authorization needs;
+- what tools are used to document the api surface (e.g. swagger/OpenAPI, simple API.md);
+- what linting rules are used;
+- should we have some performance tests (I like to use k6) to ensure there's no performance degradation with future additions?
+- should we define the requirements for this service test coverage? e.g. 75% of the lines covered by tests;
+- what does the infrastructure tied to it looks like? for things like observability/monitoring, distributed logging, orchestration, etc;
+- accessibility of the service, e.g. will it be publicly exposed? If so, how are TLS/SSL certificates normally used
+  within the company?
+- where it would run (single container, serverless function in the cloud, on-prem in a VM...);
+- how are integration tests written and maintain now that the UI will call this service endpoint?

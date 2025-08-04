@@ -1,0 +1,14 @@
+@startuml arch
+
+component main
+component api
+component domain
+component repository
+component infrastructure
+
+main ..> api
+main ..> infrastructure
+api ..> domain
+repository ..> domain
+
+@enduml
