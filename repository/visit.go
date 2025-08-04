@@ -2,8 +2,13 @@
 package repository
 
 import (
+	"context"
 	"deus.ai-code-challenge/domain"
-	"sync"
+)
+
+const (
+	kindStore = "store"
+	kindCount = "count"
 )
 
 type pageURL = string
@@ -18,25 +23,65 @@ type visitorID = string
 //     *this lookup map ensures that reads are fast when handling a big number of visitors
 //
 // In terms of Big O notation this ensures both methods have an expected O(1) time complexity (exchanged for a higher space complexity)
+//
+// This version differs from the one provided in the main branch since it uses channels instead of mutexes to avoid data race problems.
+// I'd advise against using this approach since a since mutex provides better performance and much cleaner code for this specific example
+// (it's here just for me to have something more to show)
+// Not that: a single channel is used to interact with the data (this ensures that interactions with the data are always ordered between different kinds)
 type InMemoryRepository struct {
-	m     sync.RWMutex
+	ch    chan query
 	data  map[pageURL]map[visitorID]struct{}
 	count map[pageURL]uint64
 }
 
-// NewVisitsInMemoryRepository is a constructor for the in-memory VisitsRepository
-func NewVisitsInMemoryRepository() *InMemoryRepository {
-	return &InMemoryRepository{
-		data:  make(map[pageURL]map[visitorID]struct{}),
-		count: make(map[pageURL]uint64),
+type query struct {
+	kind  string
+	store struct {
+		ch    chan<- error
+		visit domain.Visit
+	}
+	count struct {
+		ch chan<- struct {
+			count uint64
+			err   error
+		}
+		pageURL pageURL
 	}
 }
 
-// Store ensures that unique visitor + page url are stored and accounted for when retrieving the counter for a page
-func (i *InMemoryRepository) Store(visit domain.Visit) error {
-	i.m.Lock()
-	defer i.m.Unlock()
+// NewVisitsInMemoryRepository is a constructor for the in-memory VisitsRepository
+func NewVisitsInMemoryRepository(ctx context.Context) *InMemoryRepository {
+	repo := &InMemoryRepository{
+		ch:    make(chan query),
+		data:  make(map[pageURL]map[visitorID]struct{}),
+		count: make(map[pageURL]uint64),
+	}
 
+	go repo.run(ctx)
+
+	return repo
+}
+
+// Store is the public function that:
+// - creates a `query` of type store
+// - sends the query to the repo channel
+// - waits for the response (within the channel sent) and returns it
+func (i *InMemoryRepository) Store(visit domain.Visit) error {
+	ch := make(chan error)
+
+	i.ch <- query{
+		kind: kindStore,
+		store: struct {
+			ch    chan<- error
+			visit domain.Visit
+		}{ch: ch, visit: visit},
+	}
+
+	return <-ch
+}
+
+// Store ensures that unique visitor + page url are stored and accounted for when retrieving the counter for a page
+func (i *InMemoryRepository) store(visit domain.Visit) error {
 	visitors, pageFound := i.data[visit.PageURL]
 	if !pageFound {
 		i.data[visit.PageURL] = map[visitorID]struct{}{
@@ -56,10 +101,57 @@ func (i *InMemoryRepository) Store(visit domain.Visit) error {
 	return nil
 }
 
-// CountUniqueVisitors simply reads the count map entry for the page url given
-func (i *InMemoryRepository) CountUniqueVisitors(pageURL string) (uint64, error) {
-	i.m.RLock()
-	defer i.m.RUnlock()
+// CountUniqueVisitors is the public function that:
+// - creates a `query` of type count
+// - sends the query to the repo channel
+// - waits for the response (within the channel sent) and returns it
+func (i *InMemoryRepository) CountUniqueVisitors(pageUrl string) (uint64, error) {
+	ch := make(chan struct {
+		count uint64
+		err   error
+	})
 
+	i.ch <- query{
+		kind: kindCount,
+		count: struct {
+			ch chan<- struct {
+				count uint64
+				err   error
+			}
+			pageURL pageURL
+		}{ch: ch, pageURL: pageUrl},
+	}
+
+	resp := <-ch
+
+	return resp.count, resp.err
+}
+
+// countUniqueVisitors simply reads the count map entry for the page url given
+func (i *InMemoryRepository) countUniqueVisitors(pageURL pageURL) (uint64, error) {
 	return i.count[pageURL], nil
+}
+
+// run iterates thought the incoming requests until the context signals that the process needs to close
+func (i *InMemoryRepository) run(ctx context.Context) {
+	defer close(i.ch)
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case q := <-i.ch:
+			if q.kind == kindStore {
+				err := i.store(q.store.visit)
+				q.store.ch <- err
+			}
+			if q.kind == kindCount {
+				count, err := i.countUniqueVisitors(q.count.pageURL)
+				q.count.ch <- struct {
+					count uint64
+					err   error
+				}{count: count, err: err}
+			}
+		}
+	}
 }

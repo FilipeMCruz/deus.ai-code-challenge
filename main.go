@@ -32,7 +32,7 @@ func main() {
 // start registers the handlers (wrapped with logging) in a ServeMux
 // and calls infrastructure.Run to run the http Server
 func start(ctx context.Context, stop func(), port int) error {
-	repo := repository.NewVisitsInMemoryRepository()
+	repo := repository.NewVisitsInMemoryRepository(ctx)
 
 	mux := http.NewServeMux()
 

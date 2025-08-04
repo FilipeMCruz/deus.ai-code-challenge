@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"deus.ai-code-challenge/domain"
 	"sync"
 	"testing"
@@ -136,7 +137,7 @@ func TestInMemoryRepository(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-			r := NewVisitsInMemoryRepository()
+			r := NewVisitsInMemoryRepository(context.Background())
 
 			for _, input := range tc.inputs {
 				if input.store.PageURL == "" {
@@ -199,7 +200,7 @@ func TestInMemoryRepositoryConcurrency(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-			r := NewVisitsInMemoryRepository()
+			r := NewVisitsInMemoryRepository(context.Background())
 
 			var wg = sync.WaitGroup{}
 			wg.Add(len(tc.inputs))
