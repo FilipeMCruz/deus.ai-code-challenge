@@ -45,6 +45,13 @@ docker compose up -d
 
 ## Requirements assumed
 
+- page urls and visitor id can't be an empty string
+- all non-empty visitor ids received are valid and exist within the deus.ai domain;
+- a page url can be seen as a unique identifier, e.g.: https://example.org/page?query=x != http://example.org/page
+
 ## Possible improvements
 
 ## Notes
+
+- the business rules of this code challenge are almost none existing, in a proper application I'd love for most business logic to
+  live in the domain and have a proper 'services' layer, but with the given requirements there's no need to over-engineer the solution
