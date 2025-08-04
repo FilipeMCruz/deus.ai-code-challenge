@@ -136,7 +136,7 @@ func TestInMemoryRepository(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-			r := NewInMemoryRepository()
+			r := NewVisitsInMemoryRepository()
 
 			for _, input := range tc.inputs {
 				if input.store.PageURL == "" {
@@ -199,7 +199,7 @@ func TestInMemoryRepositoryConcurrency(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-			r := NewInMemoryRepository()
+			r := NewVisitsInMemoryRepository()
 
 			var wg = sync.WaitGroup{}
 			wg.Add(len(tc.inputs))

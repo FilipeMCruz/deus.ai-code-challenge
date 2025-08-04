@@ -24,8 +24,8 @@ type InMemoryRepository struct {
 	count map[pageURL]uint64
 }
 
-// NewInMemoryRepository is a constructor for the in-memory VisitsRepository
-func NewInMemoryRepository() *InMemoryRepository {
+// NewVisitsInMemoryRepository is a constructor for the in-memory VisitsRepository
+func NewVisitsInMemoryRepository() *InMemoryRepository {
 	return &InMemoryRepository{
 		data:  make(map[pageURL]map[visitorID]struct{}),
 		count: make(map[pageURL]uint64),
