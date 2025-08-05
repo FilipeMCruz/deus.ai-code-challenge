@@ -7,8 +7,8 @@ import (
 	"net/http"
 )
 
-// BuildUserNavigationHandler provides an http handler responsible for storing a new visit
-func BuildUserNavigationHandler(repository domain.VisitsRepository) http.HandlerFunc {
+// buildUserNavigationHandler provides an http handler responsible for storing a new visit
+func buildUserNavigationHandler(repository domain.VisitsRepository) http.HandlerFunc {
 	type requestBody struct {
 		VisitorId string `json:"visitor_id,omitempty"`
 		PageURL   string `json:"page_url,omitempty"`
@@ -52,9 +52,9 @@ func BuildUserNavigationHandler(repository domain.VisitsRepository) http.Handler
 	}
 }
 
-// BuildUniqueVisitorForPageHandler provides an http.Handler responsible for providing the unique number of visitor
+// buildUniqueVisitorForPageHandler provides an http.Handler responsible for providing the unique number of visitor
 // for a specific page
-func BuildUniqueVisitorForPageHandler(repository domain.VisitsRepository) http.HandlerFunc {
+func buildUniqueVisitorForPageHandler(repository domain.VisitsRepository) http.HandlerFunc {
 	queryParamKey := "pageUrl"
 
 	type responseBody struct {

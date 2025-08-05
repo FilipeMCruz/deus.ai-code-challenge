@@ -108,7 +108,7 @@ func TestBuildUserNavigationHandler(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			h := BuildUserNavigationHandler(mockRepo)
+			h := buildUserNavigationHandler(mockRepo)
 
 			rr := httptest.NewRecorder()
 			h.ServeHTTP(rr, req)
@@ -193,7 +193,7 @@ func TestBuildUniqueVisitorForPageHandler(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			h := BuildUniqueVisitorForPageHandler(mockRepo)
+			h := buildUniqueVisitorForPageHandler(mockRepo)
 
 			rr := httptest.NewRecorder()
 			h.ServeHTTP(rr, req)
