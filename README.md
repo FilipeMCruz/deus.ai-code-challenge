@@ -16,6 +16,8 @@ API details can be found [here](docs/API.md).
 
 Architecture details can be found [here](docs/ARCHITCTURE.md).
 
+Basic integration test can be found [here](tests/README.md).
+
 Branch [feat/channels](https://github.com/FilipeMCruz/deus.ai-code-challenge/tree/feat/channels) contains a different
 approach to data synchronization in the repository package/layer, using channels instead of a mutex. 
 
@@ -98,7 +100,7 @@ This service is far from "production" ready, there's a lot of interesting topics
 - what are the authentication/authorization needs;
 - what tools are used to document the api surface (e.g. swagger/OpenAPI, simple API.md);
 - what linting rules are used;
-- should we have some performance tests (I like to use k6) to ensure there's no performance degradation with future
+- should we have some performance tests to ensure there's no performance degradation with future
   additions?
 - should we define the requirements for this service test coverage? e.g. 75% of the lines covered by tests;
 - what does the infrastructure tied to it looks like? for things like observability/monitoring, distributed logging,
