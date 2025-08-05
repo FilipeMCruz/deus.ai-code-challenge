@@ -4,6 +4,9 @@ This section presents an easy way to test that the solution is free from data ra
 The tool used was [k6](https://k6.io/), the script present in [here](k6/script.js) helps to test the solution under
 various basic load scenarios.
 
+These tests could, after careful considerations, run in the CI pipeline and profile the application in terms
+of performance, helping us detect future performance regressions.
+
 ## Running
 
 To run the test one needs to install k6.
