@@ -16,6 +16,11 @@ API details can be found [here](docs/API.md).
 
 Architecture details can be found [here](docs/ARCHITCTURE.md).
 
+Basic integration test can be found [here](tests/README.md).
+
+Branch [feat/channels](https://github.com/FilipeMCruz/deus.ai-code-challenge/tree/feat/channels) contains a different
+approach to data synchronization in the repository package/layer, using channels instead of a mutex. 
+
 ## Build & Running
 
 There's two different ways to run the solution:
@@ -91,13 +96,19 @@ Without proper test data it's near impossible to know how performance can be imp
   shutting down the server.
 
 This service is far from "production" ready, there's a lot of interesting topics to discuss here:
+
 - what are the authentication/authorization needs;
 - what tools are used to document the api surface (e.g. swagger/OpenAPI, simple API.md);
 - what linting rules are used;
-- should we have some performance tests (I like to use k6) to ensure there's no performance degradation with future additions?
+- should we have some performance tests to ensure there's no performance degradation with future
+  additions?
 - should we define the requirements for this service test coverage? e.g. 75% of the lines covered by tests;
-- what does the infrastructure tied to it looks like? for things like observability/monitoring, distributed logging, orchestration, etc;
+- what does the infrastructure tied to it looks like? for things like observability/monitoring, distributed logging,
+  orchestration, etc;
 - accessibility of the service, e.g. will it be publicly exposed? If so, how are TLS/SSL certificates normally used
   within the company?
 - where it would run (single container, serverless function in the cloud, on-prem in a VM...);
 - how are integration tests written and maintain now that the UI will call this service endpoint?
+- what environments, besides prod, are set up?
+- what does the SDLC looks like? How does the teams approach developments? features branches, main branch for prod,
+  develop for dev/uat environments?
