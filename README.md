@@ -99,9 +99,9 @@ rotated every couple of months. Those keys would be shared by this service and a
 
 If needed the keys could have their set of scopes defined as such:
 
-- admin (full access)
-- read (able to query page statistics)
-- write (able to register page visits)
+- admin (full access);
+- read (able to query page statistics);
+- write (able to register page visits).
 
 The key would be sent on every request under the header 'Authorization' and validated in this service before preforming
 the requested action.
@@ -137,14 +137,15 @@ time looking at the same set of pages, there's no need to repeatedly query the d
   logic to live in the domain and have a proper 'services' layer, but with the given requirements there's no need to
   over-engineer the solution;
 - the repository package is an agnostic package responsible for handling common needs such as logging and gracefully
-  shutting down the server.
+  shutting down the server;
+- CORS wasn't a concern since the challenge seems to indicate that there's a system that sits between the browser and this
+  service.
 
 This service is far from "production" ready, there's a lot of interesting topics to discuss here:
 
 - what are the authentication/authorization needs;
 - what tools are used to document the api surface (e.g. swagger/OpenAPI, simple API.md);
 - what linting rules are used;
-- should we have some performance tests to ensure there's no performance degradation with future additions?
 - should we define the requirements for this service test coverage? e.g. 75% of the lines covered by tests;
 - what does the infrastructure tied to it looks like? for things like observability/monitoring, distributed logging,
   orchestration, etc;
