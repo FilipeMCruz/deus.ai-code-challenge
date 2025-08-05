@@ -3,6 +3,7 @@ package infrastructure
 
 import (
 	"context"
+	"deus.ai-code-challenge/infrastructure/content"
 	"deus.ai-code-challenge/infrastructure/logging"
 	"errors"
 	"fmt"
@@ -14,7 +15,10 @@ import (
 
 // Wrap wraps a handler with:
 // - basic request info logging
+// - basic content type header set to application/json
 func Wrap(next http.Handler) http.Handler {
+	next = content.WrapJsonContentType(next)
+
 	return logging.WrapLogging(next)
 }
 

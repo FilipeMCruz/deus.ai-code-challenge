@@ -12,6 +12,7 @@ The server is organized into the following packages:
 - repository: responsible for managing the data collected by the server;
 - infrastructure: responsible for running the http server and defining generic wrappers like:
     - logging: logs basic request info;
+    - content: set the content-type header on all responses to application/json;
 - main.go: responsible for capturing flags passed to the program, registering the handlers and starting the server.
 
 ![arch](arch.svg)

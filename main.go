@@ -36,8 +36,9 @@ func start(ctx context.Context, stop func(), port int) error {
 
 	mux := http.NewServeMux()
 
-	mux.Handle("GET /api/v1/unique-visitors", infrastructure.Wrap(api.BuildUniqueVisitorForPageHandler(repo)))
-	mux.Handle("POST /api/v1/user-navigation", infrastructure.Wrap(api.BuildUserNavigationHandler(repo)))
+	for url, handler := range api.Handlers(repo) {
+		mux.Handle(url, infrastructure.Wrap(handler))
+	}
 
 	return infrastructure.Run(ctx, stop, port, mux)
 }

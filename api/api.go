@@ -2,6 +2,7 @@
 package api
 
 import (
+	"deus.ai-code-challenge/domain"
 	"fmt"
 	"net/http"
 )
@@ -12,6 +13,14 @@ const (
 	errMarshallResponse   = "unable to write response"
 	errUnmarshallRequest  = "unable to read request body"
 )
+
+// Handlers returns all the service registered url and handler pairs
+func Handlers(repo domain.VisitsRepository) map[string]http.HandlerFunc {
+	return map[string]http.HandlerFunc{
+		"GET /api/v1/unique-visitors":  buildUniqueVisitorForPageHandler(repo),
+		"POST /api/v1/user-navigation": buildUserNavigationHandler(repo),
+	}
+}
 
 // writeError emulates what http.Error does but uses json instead of text to represent the data
 // this also ensures that all error responses follow the same structure
