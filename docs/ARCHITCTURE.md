@@ -35,8 +35,8 @@ The basic process to track user navigation looks like the following:
 
 The server is organized into the following packages:
 
-- api: responsible for validating requests before calling the repository and generating an http response;
-- service: responsible for processing business logic and rules;
+- api: responsible for validating requests before calling the service layer and generating an http response;
+- service: responsible for processing business logic and rules and calling the repository layer;
 - domain: responsible for defining the business concept and how data is managed within the server;
 - repository: responsible for managing the data collected by the server;
 - infrastructure: responsible for running the http server and defining generic wrappers like:

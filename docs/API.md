@@ -12,6 +12,11 @@ All unsuccessful requests return the following body:
 }
 ```
 
+The error status codes can be:
+- 400: invalid request (missing json field or query param)
+- 404: para not found (given url is not valid)
+- 500: internal server failure
+
 ## Number of unique visitors for given page
 
 URL: '/api/v1/unique-visitors'
@@ -38,7 +43,7 @@ Example:
 curl "http://localhost:8080/api/v1/unique-visitors?pageUrl=u"
 ```
 
-Other Status Codes: 400, 500
+Other Status Codes: 400, 404, 500
 
 ## Stats
 
@@ -65,4 +70,4 @@ Example:
 echo '{"visitor_id":"b", "page_url":"u"}' | curl -X POST "http://localhost:8080/api/v1/user-navigation" --data-binary @-
 ```
 
-Other Status Codes: 400, 500
+Other Status Codes: 400, 404, 500
