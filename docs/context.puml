@@ -1,0 +1,27 @@
+@startuml context
+
+component browser
+
+interface "System UI" as systemUI
+
+interface "System API" as systemAPI
+
+component "Private Network" {
+    component system
+
+    component service
+
+    interface "Service\nHTTP API" as serviceAPI
+}
+
+serviceAPI - service
+
+systemUI -- system
+systemAPI -- system
+
+browser --( systemAPI
+browser --( systemUI
+
+system --( serviceAPI
+
+@enduml
