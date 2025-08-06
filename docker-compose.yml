@@ -1,6 +1,8 @@
 services:
   server:
     build: .
-    command: "-port=8080"
+    command: "-port=8080 -pageFilePath=/pages.csv"
     ports:
       - "8080:8080"
+    volumes:
+      - ./pages.csv:/pages.csv

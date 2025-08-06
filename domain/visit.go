@@ -12,5 +12,5 @@ type Visit struct {
 // so that we can better account for future changes (e.g. using redis instead of storing everything in memory so that there's no data lost when services are shutdown)
 type VisitsRepository interface {
 	Store(visit Visit) error
-	CountUniqueVisitors(pageURL string) (uint64, error)
+	CountUniqueVisitors(pageURL PageURL) (uint64, error)
 }

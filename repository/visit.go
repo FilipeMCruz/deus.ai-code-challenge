@@ -6,7 +6,6 @@ import (
 	"sync"
 )
 
-type pageURL = string
 type visitorID = string
 
 // InMemoryRepository stores page visits in a structure optimised for the requirements provided
@@ -25,7 +24,7 @@ type InMemoryRepository struct {
 }
 
 // NewVisitsInMemoryRepository is a constructor for the in-memory VisitsRepository
-func NewVisitsInMemoryRepository() *InMemoryRepository {
+func NewVisitsInMemoryRepository() domain.VisitsRepository {
 	return &InMemoryRepository{
 		data:  make(map[pageURL]map[visitorID]struct{}),
 		count: make(map[pageURL]uint64),
@@ -57,9 +56,9 @@ func (i *InMemoryRepository) Store(visit domain.Visit) error {
 }
 
 // CountUniqueVisitors simply reads the count map entry for the page url given
-func (i *InMemoryRepository) CountUniqueVisitors(pageURL string) (uint64, error) {
+func (i *InMemoryRepository) CountUniqueVisitors(url domain.PageURL) (uint64, error) {
 	i.m.RLock()
 	defer i.m.RUnlock()
 
-	return i.count[pageURL], nil
+	return i.count[pageURL(url)], nil
 }

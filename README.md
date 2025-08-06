@@ -5,12 +5,13 @@ understand the code there are some comments in it.
 
 This solution is a simple http server written in go.
 
-Since the domain and requirements are simple there's no need to over-complexify the solution, therefore I choose to:
+Since the domain and requirements were simple I've decided to introduce a new business rule:
+- valid page urls are present in a file that is loaded at startup
 
-- not use any libraries, go already provides the basics needed to do what this challenge requires;
-- not follow a commonly used architecture such as onion, layered or clean architecture for the sake of simplicity:
-    - e.g. there's no need to have a "service/use case" layer when there's almost no business logic, rules or processes
-      to run.
+This requirement introduces some complexity, there I've decided to:
+- still not use any libraries, go already provides the basics needed to do what this challenge requires;
+- follow a commonly used architecture - onion - since:
+    - there's now a _small_ need to have a "service/use case" layer where the introduced business logic can run.
 
 API details can be found [here](docs/API.md).
 
@@ -43,7 +44,14 @@ go build -o server .
 To run the solution in port 8080:
 
 ```shell
-./server -port 8080
+./server -port 8080 -pageFilePath pages.csv
+```
+
+A file `page.csv` needs to be created in the root folder, here's an example of its content:
+
+```csv
+https://deus.ai/secure-page
+http://deus.ai/page
 ```
 
 ### Docker
@@ -57,8 +65,7 @@ docker compose up -d
 ## Requirements assumed
 
 - page urls and visitor id can't be represented as an empty string;
-- all non-empty visitor ids and page urls received are valid and our service can assume that they exist within the
-  deus.ai domain;
+- all non-empty visitor ids received are valid and our service can assume that they exist within the deus.ai domain;
 - a page url can be seen as a unique identifier, e.g.: https://example.org/page?query=x != http://example.org/page;
 - page url and visitor ids are case sensitive, e.g.: visitor alex != AleX
 

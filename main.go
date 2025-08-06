@@ -21,9 +21,10 @@ func main() {
 	defer stop()
 
 	port := flag.Int("port", 8080, "port to listen on")
+	pageFilePath := flag.String("pageFilePath", "", "file where all valid pages are kept")
 	flag.Parse()
 
-	err := start(ctx, stop, *port)
+	err := start(ctx, stop, *port, *pageFilePath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -31,12 +32,18 @@ func main() {
 
 // start registers the handlers (wrapped with logging) in a ServeMux
 // and calls infrastructure.Run to run the http Server
-func start(ctx context.Context, stop func(), port int) error {
-	repo := repository.NewVisitsInMemoryRepository()
+func start(ctx context.Context, stop func(), port int, pageFilePath string) error {
+	pages, err := repository.ReadPages(pageFilePath)
+	if err != nil {
+		return err
+	}
+
+	visitsRepo := repository.NewVisitsInMemoryRepository()
+	pagesRepo := repository.NewPageInMemoryRepository(pages)
 
 	mux := http.NewServeMux()
 
-	for url, handler := range api.Handlers(repo) {
+	for url, handler := range api.Handlers(visitsRepo, pagesRepo) {
 		mux.Handle(url, infrastructure.Wrap(handler))
 	}
 

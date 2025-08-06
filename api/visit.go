@@ -2,13 +2,16 @@ package api
 
 import (
 	"deus.ai-code-challenge/domain"
+	"deus.ai-code-challenge/service"
 	"encoding/json"
 	"io"
 	"net/http"
 )
 
 // buildUserNavigationHandler provides an http handler responsible for storing a new visit
-func buildUserNavigationHandler(repository domain.VisitsRepository) http.HandlerFunc {
+func buildUserNavigationHandler(repository domain.VisitsRepository, pages domain.PageRepository) http.HandlerFunc {
+	serv := service.BuildUserNavigationService(repository, pages)
+
 	type requestBody struct {
 		VisitorId string `json:"visitor_id,omitempty"`
 		PageURL   string `json:"page_url,omitempty"`
@@ -40,12 +43,12 @@ func buildUserNavigationHandler(repository domain.VisitsRepository) http.Handler
 			return
 		}
 
-		err = repository.Store(domain.Visit{
+		err = serv(domain.Visit{
 			Visitor: i.VisitorId,
 			PageURL: i.PageURL,
 		})
 		if err != nil {
-			writeError(w, err.Error(), http.StatusInternalServerError)
+			writeError(w, err.Error(), getStatusCode(err))
 
 			return
 		}
@@ -54,7 +57,9 @@ func buildUserNavigationHandler(repository domain.VisitsRepository) http.Handler
 
 // buildUniqueVisitorForPageHandler provides an http.Handler responsible for providing the unique number of visitor
 // for a specific page
-func buildUniqueVisitorForPageHandler(repository domain.VisitsRepository) http.HandlerFunc {
+func buildUniqueVisitorForPageHandler(repository domain.VisitsRepository, pages domain.PageRepository) http.HandlerFunc {
+	serv := service.BuildUniqueVisitorForPageService(repository, pages)
+
 	queryParamKey := "pageUrl"
 
 	type responseBody struct {
@@ -69,9 +74,9 @@ func buildUniqueVisitorForPageHandler(repository domain.VisitsRepository) http.H
 			return
 		}
 
-		numberOfUniqueVisitors, err := repository.CountUniqueVisitors(pageURL)
+		numberOfUniqueVisitors, err := serv(domain.PageURL(pageURL))
 		if err != nil {
-			writeError(w, err.Error(), http.StatusInternalServerError)
+			writeError(w, err.Error(), getStatusCode(err))
 
 			return
 		}

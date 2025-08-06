@@ -8,7 +8,7 @@ import (
 
 func TestInMemoryRepository(t *testing.T) {
 	type count struct {
-		pageURL       pageURL
+		pageURL       domain.PageURL
 		expectedCount uint64
 	}
 
@@ -163,7 +163,7 @@ func TestInMemoryRepositoryConcurrency(t *testing.T) {
 	type testCase struct {
 		description    string
 		inputs         []domain.Visit
-		expectedCounts map[pageURL]uint64
+		expectedCounts map[domain.PageURL]uint64
 	}
 
 	testCases := []testCase{
@@ -191,7 +191,7 @@ func TestInMemoryRepositoryConcurrency(t *testing.T) {
 					PageURL: "url",
 				},
 			},
-			expectedCounts: map[pageURL]uint64{
+			expectedCounts: map[domain.PageURL]uint64{
 				"url": 5,
 			},
 		},

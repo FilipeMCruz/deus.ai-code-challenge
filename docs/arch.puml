@@ -3,6 +3,7 @@
 component main
 component api
 component domain
+component service
 component repository
 component infrastructure
 
@@ -10,5 +11,7 @@ main ..> api
 main ..> infrastructure
 api ..> domain
 repository ..> domain
+api ..> service
+service ..> domain
 
 @enduml
