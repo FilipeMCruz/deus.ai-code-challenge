@@ -21,6 +21,9 @@ Basic integration test can be found [here](tests/README.md).
 Branch [feat/channels](https://github.com/FilipeMCruz/deus.ai-code-challenge/tree/feat/channels) contains a different
 approach to data synchronization in the repository package/layer, using channels instead of a mutex.
 
+Branch [feat/valid-pages-only](https://github.com/FilipeMCruz/deus.ai-code-challenge/tree/feat/valid-pages-only) adds a
+business requirement (set of valid page urls are specified at startup) to justify adding a "service" layer to the mix.
+
 ## Build & Running
 
 There's two different ways to run the solution:
@@ -57,7 +60,8 @@ docker compose up -d
 ## Requirements assumed
 
 - page urls and visitor id can't be represented as an empty string;
-- all non-empty visitor ids received are valid and exist within the deus.ai domain;
+- all non-empty visitor ids and page urls received are valid and our service can assume that they exist within the
+  deus.ai domain;
 - a page url can be seen as a unique identifier, e.g.: https://example.org/page?query=x != http://example.org/page;
 - page url and visitor ids are case sensitive, e.g.: visitor alex != AleX
 
@@ -138,7 +142,8 @@ time looking at the same set of pages, there's no need to repeatedly query the d
   over-engineer the solution;
 - the repository package is an agnostic package responsible for handling common needs such as logging and gracefully
   shutting down the server;
-- CORS wasn't a concern since the challenge seems to indicate that there's a system that sits between the browser and this
+- CORS wasn't a concern since the challenge seems to indicate that there's a system that sits between the browser and
+  this
   service.
 
 This service is far from "production" ready, there's a lot of interesting topics to discuss here:

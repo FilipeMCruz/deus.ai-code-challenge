@@ -1,0 +1,25 @@
+@startuml context-process
+
+actor visitor
+participant browser
+
+box "Private Network"
+    participant system
+    participant service
+end box
+
+visitor -> browser: visits page
+activate browser
+browser -> browser: generating unique\nidentifier for visitor
+browser -> system: send an event
+activate system
+system  -> service: call user navigation\ningestion endpoint
+activate service
+service -> service: store information
+service --> system: success
+deactivate service
+system --> browser: success
+deactivate system
+
+
+@enduml

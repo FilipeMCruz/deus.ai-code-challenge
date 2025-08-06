@@ -11,10 +11,9 @@ const (
 	kindCount = "count"
 )
 
-type pageURL = string
 type visitorID = string
 
-// InMemoryRepository stores page visits in a structure optimised for the requirements provided
+// InMemoryVisitRepository stores page visits in a structure optimised for the requirements provided
 //   - data is a map of page urls (key) with their visitors (values)
 //     *visitors is in itself a map of visitor id (key) with no values, (go doesn't provide a set data structure natively
 //     but those can be mimicked by a map[KEY]struct{}. This ensures that visitors for a specific page are always unique
@@ -30,8 +29,8 @@ type visitorID = string
 // Not that: a single channel is used to interact with the data (this ensures that interactions with the data are always ordered between different kinds)
 type InMemoryRepository struct {
 	ch    chan query
-	data  map[pageURL]map[visitorID]struct{}
-	count map[pageURL]uint64
+	data  map[domain.PageURL]map[visitorID]struct{}
+	count map[domain.PageURL]domain.Count
 }
 
 type query struct {
@@ -45,7 +44,7 @@ type query struct {
 			count uint64
 			err   error
 		}
-		pageURL pageURL
+		pageURL domain.PageURL
 	}
 }
 
@@ -53,8 +52,8 @@ type query struct {
 func NewVisitsInMemoryRepository(ctx context.Context) *InMemoryRepository {
 	repo := &InMemoryRepository{
 		ch:    make(chan query),
-		data:  make(map[pageURL]map[visitorID]struct{}),
-		count: make(map[pageURL]uint64),
+		data:  make(map[domain.PageURL]map[visitorID]struct{}),
+		count: make(map[domain.PageURL]domain.Count),
 	}
 
 	go repo.run(ctx)
@@ -101,11 +100,8 @@ func (i *InMemoryRepository) store(visit domain.Visit) error {
 	return nil
 }
 
-// CountUniqueVisitors is the public function that:
-// - creates a `query` of type count
-// - sends the query to the repo channel
-// - waits for the response (within the channel sent) and returns it
-func (i *InMemoryRepository) CountUniqueVisitors(pageUrl string) (uint64, error) {
+// CountUniqueVisitors simply reads the count map entry for the page url given
+func (i *InMemoryRepository) CountUniqueVisitors(url domain.PageURL) (domain.Count, error) {
 	ch := make(chan struct {
 		count uint64
 		err   error
@@ -115,11 +111,11 @@ func (i *InMemoryRepository) CountUniqueVisitors(pageUrl string) (uint64, error)
 		kind: kindCount,
 		count: struct {
 			ch chan<- struct {
-				count uint64
+				count domain.Count
 				err   error
 			}
-			pageURL pageURL
-		}{ch: ch, pageURL: pageUrl},
+			pageURL domain.PageURL
+		}{ch: ch, pageURL: url},
 	}
 
 	resp := <-ch
@@ -128,7 +124,7 @@ func (i *InMemoryRepository) CountUniqueVisitors(pageUrl string) (uint64, error)
 }
 
 // countUniqueVisitors simply reads the count map entry for the page url given
-func (i *InMemoryRepository) countUniqueVisitors(pageURL pageURL) (uint64, error) {
+func (i *InMemoryRepository) countUniqueVisitors(pageURL domain.PageURL) (domain.Count, error) {
 	return i.count[pageURL], nil
 }
 
