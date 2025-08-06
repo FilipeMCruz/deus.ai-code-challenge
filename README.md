@@ -21,6 +21,9 @@ Basic integration test can be found [here](tests/README.md).
 Branch [feat/channels](https://github.com/FilipeMCruz/deus.ai-code-challenge/tree/feat/channels) contains a different
 approach to data synchronization in the repository package/layer, using channels instead of a mutex.
 
+Branch [feat/valid-pages-only](https://github.com/FilipeMCruz/deus.ai-code-challenge/tree/feat/valid-pages-only) adds a
+business requirement (set of valid page urls are specified at startup) to justify adding a "service" layer to the mix.
+
 ## Build & Running
 
 There's two different ways to run the solution:

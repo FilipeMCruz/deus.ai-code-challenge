@@ -6,11 +6,14 @@ type Visit struct {
 	PageURL string
 }
 
-// VisitsRepository is responsible for managing data related to user navigation according to the requirements provided
+type PageURL = string
+type Count = uint64
+
+// VisitRepository is responsible for managing data related to user navigation according to the requirements provided
 //
 // Even though Store and CountUniqueVisitors can't fail when working with in-memory data structures, an error was added to the return
 // so that we can better account for future changes (e.g. using redis instead of storing everything in memory so that there's no data lost when services are shutdown)
-type VisitsRepository interface {
+type VisitRepository interface {
 	Store(visit Visit) error
-	CountUniqueVisitors(pageURL string) (uint64, error)
+	CountUniqueVisitors(url PageURL) (Count, error)
 }
