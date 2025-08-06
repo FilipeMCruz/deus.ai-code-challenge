@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"deus.ai-code-challenge/domain"
 	"io"
 	"net"
 	"net/http"
@@ -96,7 +95,7 @@ func TestStart(t *testing.T) {
 			}
 
 			go func() {
-				err := start(ctx, stop, port, []domain.PageURL{"url"})
+				err := start(ctx, stop, port, "tests/pages.csv")
 
 				if !reflect.DeepEqual(tc.err, err) {
 					t.Errorf("got %v, expected %v", err, tc.err)
