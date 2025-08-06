@@ -143,8 +143,7 @@ time looking at the same set of pages, there's no need to repeatedly query the d
 - the repository package is an agnostic package responsible for handling common needs such as logging and gracefully
   shutting down the server;
 - CORS wasn't a concern since the challenge seems to indicate that there's a system that sits between the browser and
-  this
-  service.
+  this service.
 
 This service is far from "production" ready, there's a lot of interesting topics to discuss here:
 

@@ -27,7 +27,7 @@ type visitorID = string
 // I'd advise against using this approach since a since mutex provides better performance and much cleaner code for this specific example
 // (it's here just for me to have something more to show)
 // Not that: a single channel is used to interact with the data (this ensures that interactions with the data are always ordered between different kinds)
-type InMemoryRepository struct {
+type InMemoryVisitRepository struct {
 	ch    chan query
 	data  map[domain.PageURL]map[visitorID]struct{}
 	count map[domain.PageURL]domain.Count
@@ -49,8 +49,8 @@ type query struct {
 }
 
 // NewVisitsInMemoryRepository is a constructor for the in-memory VisitsRepository
-func NewVisitsInMemoryRepository(ctx context.Context) *InMemoryRepository {
-	repo := &InMemoryRepository{
+func NewVisitsInMemoryRepository(ctx context.Context) domain.VisitRepository {
+	repo := &InMemoryVisitRepository{
 		ch:    make(chan query),
 		data:  make(map[domain.PageURL]map[visitorID]struct{}),
 		count: make(map[domain.PageURL]domain.Count),
@@ -65,7 +65,7 @@ func NewVisitsInMemoryRepository(ctx context.Context) *InMemoryRepository {
 // - creates a `query` of type store
 // - sends the query to the repo channel
 // - waits for the response (within the channel sent) and returns it
-func (i *InMemoryRepository) Store(visit domain.Visit) error {
+func (i *InMemoryVisitRepository) Store(visit domain.Visit) error {
 	ch := make(chan error)
 
 	i.ch <- query{
@@ -80,7 +80,7 @@ func (i *InMemoryRepository) Store(visit domain.Visit) error {
 }
 
 // Store ensures that unique visitor + page url are stored and accounted for when retrieving the counter for a page
-func (i *InMemoryRepository) store(visit domain.Visit) error {
+func (i *InMemoryVisitRepository) store(visit domain.Visit) error {
 	visitors, pageFound := i.data[visit.PageURL]
 	if !pageFound {
 		i.data[visit.PageURL] = map[visitorID]struct{}{
@@ -101,7 +101,7 @@ func (i *InMemoryRepository) store(visit domain.Visit) error {
 }
 
 // CountUniqueVisitors simply reads the count map entry for the page url given
-func (i *InMemoryRepository) CountUniqueVisitors(url domain.PageURL) (domain.Count, error) {
+func (i *InMemoryVisitRepository) CountUniqueVisitors(url domain.PageURL) (domain.Count, error) {
 	ch := make(chan struct {
 		count uint64
 		err   error
@@ -124,12 +124,12 @@ func (i *InMemoryRepository) CountUniqueVisitors(url domain.PageURL) (domain.Cou
 }
 
 // countUniqueVisitors simply reads the count map entry for the page url given
-func (i *InMemoryRepository) countUniqueVisitors(pageURL domain.PageURL) (domain.Count, error) {
+func (i *InMemoryVisitRepository) countUniqueVisitors(pageURL domain.PageURL) (domain.Count, error) {
 	return i.count[pageURL], nil
 }
 
 // run iterates thought the incoming requests until the context signals that the process needs to close
-func (i *InMemoryRepository) run(ctx context.Context) {
+func (i *InMemoryVisitRepository) run(ctx context.Context) {
 	defer close(i.ch)
 
 	for {
