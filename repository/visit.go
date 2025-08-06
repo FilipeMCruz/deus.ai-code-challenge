@@ -1,4 +1,3 @@
-// Package repository is responsible for implementing an in-memory visit repository, optimized for the features requested in the code challenge.
 package repository
 
 import (
@@ -8,7 +7,7 @@ import (
 
 type visitorID = string
 
-// InMemoryRepository stores page visits in a structure optimised for the requirements provided
+// InMemoryRepository stores page Visits in a structure optimised for the requirements provided
 //   - data is a map of page urls (key) with their visitors (values)
 //     *visitors is in itself a map of visitor id (key) with no values, (go doesn't provide a set data structure natively
 //     but those can be mimicked by a map[KEY]struct{}. This ensures that visitors for a specific page are always unique
@@ -20,14 +19,14 @@ type visitorID = string
 type InMemoryRepository struct {
 	m     sync.RWMutex
 	data  map[pageURL]map[visitorID]struct{}
-	count map[pageURL]uint64
+	count map[pageURL]domain.Count
 }
 
-// NewVisitsInMemoryRepository is a constructor for the in-memory VisitsRepository
-func NewVisitsInMemoryRepository() domain.VisitsRepository {
+// newVisitsInMemoryRepository is a constructor for the in-memory VisitsRepository
+func newVisitsInMemoryRepository() domain.VisitsRepository {
 	return &InMemoryRepository{
 		data:  make(map[pageURL]map[visitorID]struct{}),
-		count: make(map[pageURL]uint64),
+		count: make(map[pageURL]domain.Count),
 	}
 }
 
@@ -56,7 +55,7 @@ func (i *InMemoryRepository) Store(visit domain.Visit) error {
 }
 
 // CountUniqueVisitors simply reads the count map entry for the page url given
-func (i *InMemoryRepository) CountUniqueVisitors(url domain.PageURL) (uint64, error) {
+func (i *InMemoryRepository) CountUniqueVisitors(url domain.PageURL) (domain.Count, error) {
 	i.m.RLock()
 	defer i.m.RUnlock()
 

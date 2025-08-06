@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"deus.ai-code-challenge/domain"
+	"deus.ai-code-challenge/service"
 	"errors"
 	"io"
 	"net/http"
@@ -11,50 +12,11 @@ import (
 	"testing"
 )
 
-type mockPageRepository struct {
-	t          *testing.T
-	existsFunc func(url domain.PageURL) (bool, error)
-}
-
-func (m *mockPageRepository) Exists(url domain.PageURL) (bool, error) {
-	if m.existsFunc != nil {
-		return m.existsFunc(url)
-	}
-
-	m.t.Fatal("mockVisitRepository storeFunc is nil")
-	return false, nil
-}
-
-type mockVisitRepository struct {
-	t                   *testing.T
-	storeFunc           func(domain.Visit) error
-	countUniqueVisitors func(pageURL domain.PageURL) (uint64, error)
-}
-
-func (m *mockVisitRepository) Store(visit domain.Visit) error {
-	if m.storeFunc != nil {
-		return m.storeFunc(visit)
-	}
-
-	m.t.Fatal("mockVisitRepository storeFunc is nil")
-	return nil
-}
-
-func (m *mockVisitRepository) CountUniqueVisitors(pageURL domain.PageURL) (uint64, error) {
-	if m.countUniqueVisitors != nil {
-		return m.countUniqueVisitors(pageURL)
-	}
-
-	m.t.Fatal("mockVisitRepository CountUniqueVisitors is nil")
-	return 0, nil
-}
-
 func TestBuildUserNavigationHandler(t *testing.T) {
 	type testCase struct {
 		description        string
 		input              string
-		mockRepoFunc       func(visit domain.Visit) error
-		existsRepoFunc     func(url domain.PageURL) (bool, error)
+		service            service.UserNavigationService
 		expectedResponse   []byte
 		expectedStatusCode int
 	}
@@ -63,22 +25,8 @@ func TestBuildUserNavigationHandler(t *testing.T) {
 		{
 			description: "success",
 			input:       `{"visitor_id": "id", "page_url": "url"}`,
-			mockRepoFunc: func(visit domain.Visit) error {
-				if visit.PageURL != "url" {
-					t.Errorf("visit.PageURL = %v, want %v", visit.PageURL, "url")
-				}
-				if visit.Visitor != "id" {
-					t.Errorf("visit.Visitor = %v, want %v", visit.Visitor, "id")
-				}
-
+			service: func(visit domain.Visit) error {
 				return nil
-			},
-			existsRepoFunc: func(url domain.PageURL) (bool, error) {
-				if url != "url" {
-					t.Errorf("url = %v, want %v", url, "url")
-				}
-
-				return true, nil
 			},
 			expectedResponse:   []byte(``),
 			expectedStatusCode: http.StatusOK,
@@ -103,22 +51,8 @@ func TestBuildUserNavigationHandler(t *testing.T) {
 		{
 			description: "error: call to repository fails",
 			input:       `{"visitor_id": "id", "page_url": "url"}`,
-			mockRepoFunc: func(visit domain.Visit) error {
-				if visit.PageURL != "url" {
-					t.Errorf("visit.PageURL = %v, want %v", visit.PageURL, "url")
-				}
-				if visit.Visitor != "id" {
-					t.Errorf("visit.Visitor = %v, want %v", visit.Visitor, "id")
-				}
-
+			service: func(visit domain.Visit) error {
 				return errors.New("failed to call repository")
-			},
-			existsRepoFunc: func(url domain.PageURL) (bool, error) {
-				if url != "url" {
-					t.Errorf("url = %v, want %v", url, "url")
-				}
-
-				return true, nil
 			},
 			expectedResponse:   []byte(`{"error":"failed to call repository"}`),
 			expectedStatusCode: http.StatusInternalServerError,
@@ -126,12 +60,8 @@ func TestBuildUserNavigationHandler(t *testing.T) {
 		{
 			description: "error: page not found",
 			input:       `{"visitor_id": "id", "page_url": "url"}`,
-			existsRepoFunc: func(url domain.PageURL) (bool, error) {
-				if url != "url" {
-					t.Errorf("url = %v, want %v", url, "url")
-				}
-
-				return false, nil
+			service: func(visit domain.Visit) error {
+				return service.ErrPageNotFound
 			},
 			expectedResponse:   []byte(`{"error":"page not found"}`),
 			expectedStatusCode: http.StatusNotFound,
@@ -140,22 +70,12 @@ func TestBuildUserNavigationHandler(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-			mockRepo := &mockVisitRepository{
-				t:         t,
-				storeFunc: tc.mockRepoFunc,
-			}
-
-			mockPageRepo := &mockPageRepository{
-				t:          t,
-				existsFunc: tc.existsRepoFunc,
-			}
-
 			req, err := http.NewRequest(http.MethodPost, "url", strings.NewReader(tc.input))
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			h := buildUserNavigationHandler(mockRepo, mockPageRepo)
+			h := buildUserNavigationHandler(tc.service)
 
 			rr := httptest.NewRecorder()
 			h.ServeHTTP(rr, req)
@@ -182,8 +102,7 @@ func TestBuildUniqueVisitorForPageHandler(t *testing.T) {
 	type testCase struct {
 		description        string
 		input              string
-		mockRepoFunc       func(pageURL domain.PageURL) (uint64, error)
-		existsRepoFunc     func(url domain.PageURL) (bool, error)
+		service            service.UniqueVisitorForPageService
 		expectedResponse   []byte
 		expectedStatusCode int
 	}
@@ -192,19 +111,8 @@ func TestBuildUniqueVisitorForPageHandler(t *testing.T) {
 		{
 			description: "success",
 			input:       `?pageUrl=url`,
-			mockRepoFunc: func(pageURL domain.PageURL) (uint64, error) {
-				if pageURL != "url" {
-					t.Errorf("pageURL = %v, want %v", pageURL, "url")
-				}
-
+			service: func(page domain.PageURL) (domain.Count, error) {
 				return 10, nil
-			},
-			existsRepoFunc: func(url domain.PageURL) (bool, error) {
-				if url != "url" {
-					t.Errorf("url = %v, want %v", url, "url")
-				}
-
-				return true, nil
 			},
 			expectedResponse:   []byte(`{"unique_visitors":10}`),
 			expectedStatusCode: http.StatusOK,
@@ -224,19 +132,8 @@ func TestBuildUniqueVisitorForPageHandler(t *testing.T) {
 		{
 			description: "error: call to repository fails",
 			input:       `?pageUrl=url`,
-			mockRepoFunc: func(pageURL domain.PageURL) (uint64, error) {
-				if pageURL != "url" {
-					t.Errorf("pageURL = %v, want %v", pageURL, "url")
-				}
-
+			service: func(page domain.PageURL) (domain.Count, error) {
 				return 0, errors.New("failed to call repository")
-			},
-			existsRepoFunc: func(url domain.PageURL) (bool, error) {
-				if url != "url" {
-					t.Errorf("url = %v, want %v", url, "url")
-				}
-
-				return true, nil
 			},
 			expectedResponse:   []byte(`{"error":"failed to call repository"}`),
 			expectedStatusCode: http.StatusInternalServerError,
@@ -244,12 +141,8 @@ func TestBuildUniqueVisitorForPageHandler(t *testing.T) {
 		{
 			description: "error: page not found",
 			input:       `?pageUrl=url`,
-			existsRepoFunc: func(url domain.PageURL) (bool, error) {
-				if url != "url" {
-					t.Errorf("url = %v, want %v", url, "url")
-				}
-
-				return false, nil
+			service: func(page domain.PageURL) (domain.Count, error) {
+				return 0, service.ErrPageNotFound
 			},
 			expectedResponse:   []byte(`{"error":"page not found"}`),
 			expectedStatusCode: http.StatusNotFound,
@@ -258,22 +151,12 @@ func TestBuildUniqueVisitorForPageHandler(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-			mockRepo := &mockVisitRepository{
-				t:                   t,
-				countUniqueVisitors: tc.mockRepoFunc,
-			}
-
-			mockPageRepo := &mockPageRepository{
-				t:          t,
-				existsFunc: tc.existsRepoFunc,
-			}
-
 			req, err := http.NewRequest(http.MethodPost, "url"+tc.input, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			h := buildUniqueVisitorForPageHandler(mockRepo, mockPageRepo)
+			h := buildUniqueVisitorForPageHandler(tc.service)
 
 			rr := httptest.NewRecorder()
 			h.ServeHTTP(rr, req)

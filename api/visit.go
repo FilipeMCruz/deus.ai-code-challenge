@@ -9,9 +9,7 @@ import (
 )
 
 // buildUserNavigationHandler provides an http handler responsible for storing a new visit
-func buildUserNavigationHandler(repository domain.VisitsRepository, pages domain.PageRepository) http.HandlerFunc {
-	serv := service.BuildUserNavigationService(repository, pages)
-
+func buildUserNavigationHandler(serv service.UserNavigationService) http.HandlerFunc {
 	type requestBody struct {
 		VisitorId string `json:"visitor_id,omitempty"`
 		PageURL   string `json:"page_url,omitempty"`
@@ -57,9 +55,7 @@ func buildUserNavigationHandler(repository domain.VisitsRepository, pages domain
 
 // buildUniqueVisitorForPageHandler provides an http.Handler responsible for providing the unique number of visitor
 // for a specific page
-func buildUniqueVisitorForPageHandler(repository domain.VisitsRepository, pages domain.PageRepository) http.HandlerFunc {
-	serv := service.BuildUniqueVisitorForPageService(repository, pages)
-
+func buildUniqueVisitorForPageHandler(serv service.UniqueVisitorForPageService) http.HandlerFunc {
 	queryParamKey := "pageUrl"
 
 	type responseBody struct {
@@ -81,7 +77,7 @@ func buildUniqueVisitorForPageHandler(repository domain.VisitsRepository, pages 
 			return
 		}
 
-		b, err := json.Marshal(responseBody{UniqueVisitors: numberOfUniqueVisitors})
+		b, err := json.Marshal(responseBody{UniqueVisitors: uint64(numberOfUniqueVisitors)})
 		if err != nil {
 			writeError(w, errMarshallResponse, http.StatusInternalServerError)
 

@@ -13,7 +13,7 @@ type pageInMemoryRepository struct {
 	data map[pageURL]struct{}
 }
 
-func NewPageInMemoryRepository(pages []domain.PageURL) domain.PageRepository {
+func newPageInMemoryRepository(pages []domain.PageURL) domain.PageRepository {
 	data := make(map[pageURL]struct{}, len(pages))
 	for _, page := range pages {
 		data[pageURL(page)] = struct{}{}

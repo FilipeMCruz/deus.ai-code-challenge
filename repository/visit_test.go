@@ -9,7 +9,7 @@ import (
 func TestInMemoryRepository(t *testing.T) {
 	type count struct {
 		pageURL       domain.PageURL
-		expectedCount uint64
+		expectedCount domain.Count
 	}
 
 	type input struct {
@@ -136,7 +136,7 @@ func TestInMemoryRepository(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-			r := NewVisitsInMemoryRepository()
+			r := newVisitsInMemoryRepository()
 
 			for _, input := range tc.inputs {
 				if input.store.PageURL == "" {
@@ -163,7 +163,7 @@ func TestInMemoryRepositoryConcurrency(t *testing.T) {
 	type testCase struct {
 		description    string
 		inputs         []domain.Visit
-		expectedCounts map[domain.PageURL]uint64
+		expectedCounts map[domain.PageURL]domain.Count
 	}
 
 	testCases := []testCase{
@@ -191,7 +191,7 @@ func TestInMemoryRepositoryConcurrency(t *testing.T) {
 					PageURL: "url",
 				},
 			},
-			expectedCounts: map[domain.PageURL]uint64{
+			expectedCounts: map[domain.PageURL]domain.Count{
 				"url": 5,
 			},
 		},
@@ -199,7 +199,7 @@ func TestInMemoryRepositoryConcurrency(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-			r := NewVisitsInMemoryRepository()
+			r := newVisitsInMemoryRepository()
 
 			var wg = sync.WaitGroup{}
 			wg.Add(len(tc.inputs))

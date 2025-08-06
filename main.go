@@ -9,6 +9,7 @@ import (
 	"deus.ai-code-challenge/api"
 	"deus.ai-code-challenge/infrastructure"
 	"deus.ai-code-challenge/repository"
+	"deus.ai-code-challenge/service"
 	"flag"
 	"log"
 	"net/http"
@@ -38,12 +39,13 @@ func start(ctx context.Context, stop func(), port int, pageFilePath string) erro
 		return err
 	}
 
-	visitsRepo := repository.NewVisitsInMemoryRepository()
-	pagesRepo := repository.NewPageInMemoryRepository(pages)
+	repos := repository.NewRepositories(pages)
+
+	services := service.NewServices(repos)
 
 	mux := http.NewServeMux()
 
-	for url, handler := range api.Handlers(visitsRepo, pagesRepo) {
+	for url, handler := range api.Handlers(services) {
 		mux.Handle(url, infrastructure.Wrap(handler))
 	}
 

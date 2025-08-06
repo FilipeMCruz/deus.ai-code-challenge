@@ -2,7 +2,6 @@
 package api
 
 import (
-	"deus.ai-code-challenge/domain"
 	"deus.ai-code-challenge/service"
 	"errors"
 	"fmt"
@@ -17,10 +16,10 @@ const (
 )
 
 // Handlers returns all the service registered url and handler pairs
-func Handlers(visits domain.VisitsRepository, pages domain.PageRepository) map[string]http.HandlerFunc {
+func Handlers(services service.Services) map[string]http.HandlerFunc {
 	return map[string]http.HandlerFunc{
-		"GET /api/v1/unique-visitors":  buildUniqueVisitorForPageHandler(visits, pages),
-		"POST /api/v1/user-navigation": buildUserNavigationHandler(visits, pages),
+		"GET /api/v1/unique-visitors":  buildUniqueVisitorForPageHandler(services.UniqueVisitorForPageService),
+		"POST /api/v1/user-navigation": buildUserNavigationHandler(services.UserNavigationService),
 	}
 }
 
