@@ -2,12 +2,14 @@
 package api
 
 import (
-	"deus.ai-code-challenge/domain"
 	"fmt"
 	"net/http"
+
+	"deus.ai-code-challenge/domain"
 )
 
 const (
+	errInvalidPageURL     = "invalid page url: "
 	errMissingFieldPrefix = "missing request field: "
 	errMissingParamPrefix = "missing query param: "
 	errMarshallResponse   = "unable to write response"

@@ -1,10 +1,12 @@
 package api
 
 import (
-	"deus.ai-code-challenge/domain"
 	"encoding/json"
 	"io"
 	"net/http"
+	"net/url"
+
+	"deus.ai-code-challenge/domain"
 )
 
 // buildUserNavigationHandler provides an http handler responsible for storing a new visit
@@ -40,6 +42,13 @@ func buildUserNavigationHandler(repository domain.VisitRepository) http.HandlerF
 			return
 		}
 
+		_, err = url.Parse(i.PageURL)
+		if err != nil {
+			writeError(w, errInvalidPageURL+i.PageURL, http.StatusBadRequest)
+
+			return
+		}
+
 		err = repository.Store(domain.Visit{
 			Visitor: i.VisitorId,
 			PageURL: i.PageURL,
@@ -65,6 +74,13 @@ func buildUniqueVisitorForPageHandler(repository domain.VisitRepository) http.Ha
 		pageURL := r.URL.Query().Get(queryParamKey)
 		if pageURL == "" {
 			writeError(w, errMissingParamPrefix+queryParamKey, http.StatusBadRequest)
+
+			return
+		}
+
+		_, err := url.Parse(pageURL)
+		if err != nil {
+			writeError(w, errInvalidPageURL+pageURL, http.StatusBadRequest)
 
 			return
 		}
