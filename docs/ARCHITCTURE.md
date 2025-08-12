@@ -41,6 +41,7 @@ The server is organized into the following packages:
 - infrastructure: responsible for running the http server and defining generic wrappers like:
     - logging: logs basic request info;
     - content: set the content-type header on all responses to application/json;
+    - recovery: ensures that if a panic occurs, a 500 is always returned;
 - main.go: responsible for capturing flags passed to the program, registering the handlers and starting the server.
 
 ![arch](arch.svg)

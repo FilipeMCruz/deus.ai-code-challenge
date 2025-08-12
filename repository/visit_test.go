@@ -1,9 +1,10 @@
 package repository
 
 import (
-	"deus.ai-code-challenge/domain"
 	"sync"
 	"testing"
+
+	"deus.ai-code-challenge/domain"
 )
 
 func TestInMemoryRepository(t *testing.T) {

@@ -2,8 +2,9 @@
 package repository
 
 import (
-	"deus.ai-code-challenge/domain"
 	"sync"
+
+	"deus.ai-code-challenge/domain"
 )
 
 type visitorID = string

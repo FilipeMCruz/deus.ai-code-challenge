@@ -2,13 +2,14 @@ package api
 
 import (
 	"bytes"
-	"deus.ai-code-challenge/domain"
 	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"deus.ai-code-challenge/domain"
 )
 
 type mockVisitRepository struct {

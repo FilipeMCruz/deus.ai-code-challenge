@@ -6,14 +6,15 @@ package main
 
 import (
 	"context"
-	"deus.ai-code-challenge/api"
-	"deus.ai-code-challenge/infrastructure"
-	"deus.ai-code-challenge/repository"
 	"flag"
 	"log"
 	"net/http"
 	"os/signal"
 	"syscall"
+
+	"deus.ai-code-challenge/api"
+	"deus.ai-code-challenge/infrastructure"
+	"deus.ai-code-challenge/repository"
 )
 
 func main() {

@@ -1,22 +1,26 @@
-// Package infrastructure is responsible for running the http server and defining a generic wrapper for logging
+// Package infrastructure is responsible for running the http server and defining a generic wrapper for logging, content type and panic recovery
 package infrastructure
 
 import (
 	"context"
-	"deus.ai-code-challenge/infrastructure/content"
-	"deus.ai-code-challenge/infrastructure/logging"
 	"errors"
 	"fmt"
 	"log"
 	"net"
 	"net/http"
 	"time"
+
+	"deus.ai-code-challenge/infrastructure/content"
+	"deus.ai-code-challenge/infrastructure/logging"
+	"deus.ai-code-challenge/infrastructure/recovery"
 )
 
 // Wrap wraps a handler with:
 // - basic request info logging
 // - basic content type header set to application/json
+// - panic recovery, returns a 500
 func Wrap(next http.Handler) http.Handler {
+	next = recovery.WrapPanicRecovery(next)
 	next = content.WrapJsonContentType(next)
 
 	return logging.WrapLogging(next)
