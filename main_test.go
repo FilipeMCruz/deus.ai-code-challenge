@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
+	"errors"
 	"io"
 	"net"
 	"net/http"
 	"net/url"
-	"reflect"
 	"strconv"
 	"strings"
 	"testing"
@@ -97,7 +97,7 @@ func TestStart(t *testing.T) {
 			go func() {
 				err := start(ctx, stop, port)
 
-				if !reflect.DeepEqual(tc.err, err) {
+				if !errors.Is(tc.err, err) {
 					t.Errorf("got %v, expected %v", err, tc.err)
 				}
 			}()
