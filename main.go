@@ -24,7 +24,13 @@ func main() {
 	port := flag.Int("port", 8080, "port to listen on")
 	flag.Parse()
 
-	err := start(ctx, stop, *port)
+	started := make(chan struct{})
+	go func() {
+		<-started
+		log.Printf("deus.ai server starting on port %d", *port)
+	}()
+
+	err := start(ctx, stop, *port, started)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -32,7 +38,7 @@ func main() {
 
 // start registers the handlers (wrapped with logging) in a ServeMux
 // and calls infrastructure.Run to run the http Server
-func start(ctx context.Context, stop func(), port int) error {
+func start(ctx context.Context, stop func(), port int, started chan<- struct{}) error {
 	repo := repository.NewVisitsInMemoryRepository()
 
 	mux := http.NewServeMux()
@@ -41,5 +47,5 @@ func start(ctx context.Context, stop func(), port int) error {
 		mux.Handle(url, infrastructure.Wrap(handler))
 	}
 
-	return infrastructure.Run(ctx, stop, port, mux)
+	return infrastructure.Run(ctx, stop, port, mux, started)
 }

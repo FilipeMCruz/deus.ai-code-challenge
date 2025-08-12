@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"strings"
 	"testing"
-	"time"
 )
 
 func TestStart(t *testing.T) {
@@ -94,16 +93,17 @@ func TestStart(t *testing.T) {
 				t.Fatal(err)
 			}
 
+			started := make(chan struct{})
 			go func() {
-				err := start(ctx, stop, port)
+				err := start(ctx, stop, port, started)
 
 				if !errors.Is(tc.err, err) {
 					t.Errorf("got %v, expected %v", err, tc.err)
 				}
 			}()
 
-			time.Sleep(time.Second)
-
+			<-started
+			
 			for _, req := range tc.reqs {
 				r, _ := http.NewRequest(req.method, "http://localhost:"+strconv.Itoa(port)+req.url, strings.NewReader(req.body))
 

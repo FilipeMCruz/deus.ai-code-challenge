@@ -29,19 +29,26 @@ func Wrap(next http.Handler) http.Handler {
 // Run runs an http server and ensures that it is gracefully shutdown:
 // - in flight requests are answered
 // - new requests are not accepted
-func Run(ctx context.Context, stop func(), port int, handler http.Handler) error {
+func Run(ctx context.Context, stop func(), port int, handler http.Handler, started chan<- struct{}) error {
 	ongoingCtx, stopOngoingGracefully := context.WithCancel(context.Background())
+	defer stopOngoingGracefully()
+
 	httpServer := &http.Server{
-		Addr:    fmt.Sprintf(":%d", port),
 		Handler: handler,
 		BaseContext: func(_ net.Listener) context.Context {
 			return ongoingCtx
 		},
 	}
 
+	l, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	if err != nil {
+		return err
+	}
+
+	started <- struct{}{}
+
 	go func() {
-		log.Printf("deus.ai server starting on port %d", port)
-		if err := httpServer.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
+		if err := httpServer.Serve(l); !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("HTTP server error: %v", err)
 		}
 		log.Println("Stopped serving new connections.")
@@ -52,7 +59,6 @@ func Run(ctx context.Context, stop func(), port int, handler http.Handler) error
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	defer stopOngoingGracefully()
 
 	return httpServer.Shutdown(shutdownCtx)
 }
