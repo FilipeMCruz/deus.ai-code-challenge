@@ -21,7 +21,7 @@ func buildUserNavigationHandler(repository domain.VisitRepository) http.HandlerF
 
 		err := json.NewDecoder(r.Body).Decode(&i)
 		if err != nil {
-			writeError(w, errUnmarshallRequest, http.StatusBadRequest)
+			writeError(w, newErrUnmarshallRequest())
 
 			return
 		}
@@ -31,20 +31,20 @@ func buildUserNavigationHandler(repository domain.VisitRepository) http.HandlerF
 		}(r.Body)
 
 		if i.VisitorId == "" {
-			writeError(w, errMissingFieldPrefix+"visitor id", http.StatusBadRequest)
+			writeError(w, newErrMissingFieldPrefix("visitor id"))
 
 			return
 		}
 
 		if i.PageURL == "" {
-			writeError(w, errMissingFieldPrefix+"page url", http.StatusBadRequest)
+			writeError(w, newErrMissingFieldPrefix("page url"))
 
 			return
 		}
 
 		_, err = url.Parse(i.PageURL)
 		if err != nil {
-			writeError(w, errInvalidPageURL+i.PageURL, http.StatusBadRequest)
+			writeError(w, newErrInvalidPageURL(i.PageURL))
 
 			return
 		}
@@ -54,7 +54,7 @@ func buildUserNavigationHandler(repository domain.VisitRepository) http.HandlerF
 			PageURL: i.PageURL,
 		})
 		if err != nil {
-			writeError(w, err.Error(), http.StatusInternalServerError)
+			writeError(w, err)
 
 			return
 		}
@@ -73,28 +73,28 @@ func buildUniqueVisitorForPageHandler(repository domain.VisitRepository) http.Ha
 	return func(w http.ResponseWriter, r *http.Request) {
 		pageURL := r.URL.Query().Get(queryParamKey)
 		if pageURL == "" {
-			writeError(w, errMissingParamPrefix+queryParamKey, http.StatusBadRequest)
+			writeError(w, newErrMissingParamPrefix(queryParamKey))
 
 			return
 		}
 
 		_, err := url.Parse(pageURL)
 		if err != nil {
-			writeError(w, errInvalidPageURL+pageURL, http.StatusBadRequest)
+			writeError(w, newErrInvalidPageURL(pageURL))
 
 			return
 		}
 
 		numberOfUniqueVisitors, err := repository.CountUniqueVisitors(pageURL)
 		if err != nil {
-			writeError(w, err.Error(), http.StatusInternalServerError)
+			writeError(w, err)
 
 			return
 		}
 
 		b, err := json.Marshal(responseBody{UniqueVisitors: numberOfUniqueVisitors})
 		if err != nil {
-			writeError(w, errMarshallResponse, http.StatusInternalServerError)
+			writeError(w, newErrMarshallResponse())
 
 			return
 		}
